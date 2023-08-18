@@ -5,13 +5,16 @@
     // login do banco (talvez não precise)
     // $usuario = "arduinos";
 
-    // nomes de usuário e senhas
+    // nomes de usuário permitidos
     $usuariosPermitidos = ["arduino1", "arduino2"];
-    $senhas = ["senha1", "senha2"];
+    // $senhas = ["senha1", "senha2"]; desnecessário
 
-    // muda o status para inativo para caso haja erro
-    $statusChg = 'UPDATE sala SET STATUS_SALA = "Inativo" WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
-    $result = $conn->query($statusChg);
+    if (isset($_GET['numero_sala'])) {
+        # code...
+        // muda o status para inativo para caso haja erro
+        $statusChg = 'UPDATE sala SET STATUS_SALA = "Inativo" WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
+        $result = $conn->query($statusChg);
+    }
 
     // verificar as credencias recebidas
     if (!in_array($_GET['usuario'], $usuariosPermitidos)) {
@@ -25,7 +28,7 @@
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
         header('Access-Control-Allow-Headers: Authorization, Content-type');
     
-        // verificar o método de requisição
+        // verifica o método de requisição
         $method = $_SERVER['REQUEST_METHOD'];
     
         // verifica o endpoint solicitado
