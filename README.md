@@ -3,8 +3,6 @@ arquivos que to usando no coiso do arduino
 
 
 # Parâmetros da API
-‌
-
 ### 1.endpoint
   · Recebe qual serviço deseja acessar;
   · Atualmente disponíveis: “salas”;
