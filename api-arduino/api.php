@@ -6,23 +6,33 @@
     // $usuario = "arduinos";
 
     // nomes de usuário permitidos
-    $usuariosPermitidos = ["arduino1", "arduino2"];
+    $usuarios = 'SELECT * FROM arduino;';
+    $pegaUsuarios = $conn->query($usuarios);
+    $usuariosPermitidos = array();
+    $i = 0;
+    while ($row = $pegaUsuarios->fetch_assoc()) {
+        $usuario = array(
+            'ID_ARDUINO' => $row['ID_ARDUINO'],
+            'UNIQUE_ID' => $row['UNIQUE_ID']
+        );
+
+        $usuariosPermitidos[$i] = $usuario;
+        $i++;
+    }
+    
     // $senhas = ["senha1", "senha2"]; desnecessário
 
-    if (isset($_GET['numero_sala'])) {
-        # code...
-        // muda o status para inativo para caso haja erro
-        $statusChg = 'UPDATE sala SET STATUS_SALA = "Inativo" WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
-        $result = $conn->query($statusChg);
+    // se não for para cadastrar o arduino
+    if ($_GET['endpoint'] != "cadastro") {
+        // verificar as credencias recebidas
+        if (!in_array($_GET['usuario'], $usuariosPermitidos)) {
+            // se as credenciais estiverem erradas, retorna erro
+            header('HTTP/1.0 401 Unauthorized');
+            echo (var_dump($usuariosPermitidos));
+            exit;
+        } 
     }
-
-    // verificar as credencias recebidas
-    if (!in_array($_GET['usuario'], $usuariosPermitidos)) {
-        // se as credenciais estiverem erradas, retorna erro
-        header('HTTP/1.0 401 Unauthorized');
-        echo ('Sem Permissão.');
-        exit;
-    } else {
+    else {
         header('Acess-Control-Allow-Origin: *');
         header('Content-Type: application/json; charset=UTF-8');
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -44,6 +54,10 @@
         );
         if ($method == 'GET') {
             if ($endpoint == 'salas') {
+                // muda o status para inativo para caso haja erro
+                $statusChg = 'UPDATE arduino SET STATUS_ARDUINO = "Inativo" WHERE UNIQUE_ID = ' . $_GET["usuario"];
+                $statusChgd = $conn->query($statusChg);
+                
                 // verificação de conexão com o banco
                 if ($conn->connect_error) {
                     $response = array(
@@ -58,11 +72,11 @@
                     // verifica se o query retornou algo
                     if ($result->num_rows > 0) {
                         // muda o status para ativo já que houve retorno da api
-                        $statusChg = 'UPDATE sala SET STATUS_SALA = "Ativo" WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
-                        $status = $conn->query($statusChg);
+                        $statusChg = 'UPDATE arduino SET STATUS_ARDUINO = "Ativo" WHERE UNIQUE_ID = ' . $_GET["usuario"];
+                        $statusChgd = $conn->query($statusChg);
 
                         // consulta novamente para pegar com status ativo
-                        $sql = 'SELECT * FROM sala WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
+                        $sql = 'SELECT * FROM sala INNER JOIN arduino ON FK_ARDUINO = ID_ARDUINO WHERE arduino.UNIQUE_ID = "'. $_GET['usuario'] .'";';
                         $result = $conn->query($sql);
 
                         $salas = array();
@@ -73,8 +87,7 @@
                             $sala = array(
                                 'id' => $row['ID_SALA'],
                                 'nome' => $row['NOME_SALA'],
-                                'numero' => $row['NUMERO_SALA'],
-                                'status' => $row['STATUS_SALA']
+                                'numero' => $row['NUMERO_SALA']
                             );
     
                             $salas[$i] = $sala;
@@ -87,7 +100,9 @@
                             'salas' => $salas
                         );
 
-                    } else {
+                    } 
+                    
+                    else {
                         // resposta para caso não haja retorno
                         $response = array(
                             'status' => 'error',
@@ -98,7 +113,30 @@
                     // fecha conexão com o banco
                     $conn->close();
                 }
-    
+            }
+            // endpoint cadastro
+            elseif ($endpoint == 'cadastro') {
+                $sql = 'SELECT * FROM arduino WHERE UNIQUE_ID =' . $_GET['usuario'];
+                $query = $conn->query($sql);
+                $result = $query->fetch_assoc();
+                if ($result) {
+                    $response = array(
+                        'status' => 'error',
+                        'message' => 'Erro: Arduino já cadastrado'
+                    );
+                }
+                else {
+                    $cad = 'INSERT INTO arduino(UNIQUE_ID, STATUS_ARDUINO, LAST_UPDATE) VALUES("'. $_GET['usuario'] .'", "Inativo", NOW());';
+                    $result = $conn->query($cad);
+
+                    $sql = 'SELECT * FROM arduino WHERE UNIQUE_ID =' . $_GET['usuario'];
+                    $query = $conn->query($sql);
+                    $result = $query->fetch_assoc();
+                    $response = array(
+                        'status' => 'success',
+                        'uniqueid' => $result['UNIQUE_ID']
+                    );
+                }
             }
         }
     }
