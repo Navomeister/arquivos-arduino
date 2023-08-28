@@ -6,19 +6,19 @@
     // $usuario = "arduinos";
 
     // nomes de usuário permitidos
-    $usuarios = 'SELECT * FROM arduino;';
+    $usuarios = 'SELECT UNIQUE_ID FROM arduino;';
     $pegaUsuarios = $conn->query($usuarios);
     $usuariosPermitidos = array();
     $i = 0;
     while ($row = $pegaUsuarios->fetch_assoc()) {
-        $usuario = array(
-            'ID_ARDUINO' => $row['ID_ARDUINO'],
-            'UNIQUE_ID' => $row['UNIQUE_ID']
-        );
-
-        $usuariosPermitidos[$i] = $usuario;
+        $usuariosPermitidos[$i] = $row['UNIQUE_ID'];
         $i++;
     }
+
+    $response = array(
+        'status' => 'error',
+        'message' => 'Algo deu errado.'
+    );
     
     // $senhas = ["senha1", "senha2"]; desnecessário
 
@@ -28,11 +28,10 @@
         if (!in_array($_GET['usuario'], $usuariosPermitidos)) {
             // se as credenciais estiverem erradas, retorna erro
             header('HTTP/1.0 401 Unauthorized');
-            echo (var_dump($usuariosPermitidos));
+            echo ("Usuário não autorizado. \n ID: ". $_GET['usuario']);
             exit;
         } 
     }
-    else {
         header('Acess-Control-Allow-Origin: *');
         header('Content-Type: application/json; charset=UTF-8');
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -45,7 +44,7 @@
         $endpoint = $_GET['endpoint'];
     
         // verificar os parâmetros de requisição
-        $params = $_POST;
+        $params = $_GET;
     
         // define uma resposta padrão
         $response = array(
@@ -66,11 +65,15 @@
                     );
                 } else {
                     // consulta o banco
-                    $sql = 'SELECT * FROM sala WHERE NUMERO_SALA = ' . $_GET["numero_sala"];
+                    $query = 'SELECT * FROM arduino WHERE UNIQUE_ID = "'. $_GET["usuario"] .'";';
+                    $idArduino = $conn->query($query);
+                    $pegaId = $idArduino->fetch_assoc();
+
+                    $sql = 'SELECT * FROM sala WHERE FK_ARDUINO = '. $pegaId['ID_ARDUINO'];
                     $result = $conn->query($sql);
     
                     // verifica se o query retornou algo
-                    if ($result->num_rows > 0) {
+                    if ($result) {
                         // muda o status para ativo já que houve retorno da api
                         $statusChg = 'UPDATE arduino SET STATUS_ARDUINO = "Ativo" WHERE UNIQUE_ID = ' . $_GET["usuario"];
                         $statusChgd = $conn->query($statusChg);
@@ -97,7 +100,7 @@
                         // resposta da api com status sucesso e informações
                         $response = array(
                             'status' => 'success',
-                            'salas' => $salas
+                            'sala' => $salas
                         );
 
                     } 
@@ -138,8 +141,15 @@
                     );
                 }
             }
+            elseif ($endpoint == 'ativo') {
+                $sql = "UPDATE arduino SET STATUS_ARDUINO = 'Ativo', LAST_UPDATE = NOW() WHERE UNIQUE_ID = '". $_GET['usuario'] ."';";
+                $result = $conn->query($sql);
+                $response = array(
+                    'status' => 'success',
+                    'status_arduino' => 'Ativo'
+                );
+            }
         }
-    }
 
     // enviar respostas como json
     echo(json_encode($response));
