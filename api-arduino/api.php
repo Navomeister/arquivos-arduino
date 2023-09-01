@@ -81,6 +81,29 @@
                         // consulta novamente para pegar com status ativo
                         $sql = 'SELECT * FROM sala INNER JOIN arduino ON FK_ARDUINO = ID_ARDUINO WHERE arduino.UNIQUE_ID = "'. $_GET['usuario'] .'";';
                         $result = $conn->query($sql);
+                        $resposta = $result->fetch_assoc();
+                        $nomeSala = $resposta['NOME_SALA'] ." ". $resposta['NUMERO_SALA'];
+
+                        $url = '{url}/v1/synthesize?accept=audio%2Fwav&text='. $nomeSala .'&voice=pt-BR_IsabelaV3Voice';
+
+                        // // use key 'http' even if you send the request to https://...
+                        // $options = [
+                        //     'http' => [
+                        //         'header' => "Authorization: Bearer {token}\r\nContent-type: application/x-www-form-urlencoded\r\nAccept: audio/wav",
+                        //         'method' => 'POST',
+                        //         'data' => "{\"text\":\"". $nomeSala ."\"}",
+                        //     ],
+                        // ];
+
+                        // $context = stream_context_create($options);
+                        // $result = file_get_contents($url, false, $context);
+                        // if ($result === false) {
+                        //     /* Handle error */
+                        // }
+
+                        // var_dump($result);
+
+                        $response = file_get_contents($url);
 
                         $salas = array();
                         $i = 0;
