@@ -6,7 +6,7 @@
     // $usuario = "arduinos";
 
     // nomes de usuário permitidos
-    $usuarios = 'SELECT UNIQUE_ID FROM arduino;';
+    $usuarios = 'SELECT UNIQUE_ID FROM arduino WHERE STATUS_ARDUINO = "Ativo";';
     $pegaUsuarios = $conn->query($usuarios);
     $usuariosPermitidos = array();
     $i = 0;
@@ -32,7 +32,7 @@
             exit;
         } 
     }
-        header('Acess-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/json; charset=UTF-8');
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
         header('Access-Control-Allow-Headers: Authorization, Content-type');
@@ -84,8 +84,11 @@
                         $resposta = $result->fetch_assoc();
                         $nomeSala = $resposta['NOME_SALA'] ." ". $resposta['NUMERO_SALA'];
 
-                        $url = '{url}/v1/synthesize?accept=audio%2Fwav&text='. $nomeSala .'&voice=pt-BR_IsabelaV3Voice';
+                        // $urlGET = '{url}/v1/synthesize?accept=audio%2Fwav&text='. $nomeSala .'&voice=pt-BR_IsabelaV3Voice';
+                        $urlGET = 'https://dummyjson.com/products/1';
+                        $urlPOST = '{url}/v1/synthesize?voice=pt-BR_IsabelaV3Voice';
 
+                        // POST
                         // // use key 'http' even if you send the request to https://...
                         // $options = [
                         //     'http' => [
@@ -96,34 +99,35 @@
                         // ];
 
                         // $context = stream_context_create($options);
-                        // $result = file_get_contents($url, false, $context);
+                        // $result = file_get_contents($urlPOST, false, $context);
                         // if ($result === false) {
                         //     /* Handle error */
                         // }
 
-                        // var_dump($result);
+                        // $respostaAPI = var_dump($result);
+                        
+                        // GET
+                        $respostaAPI = file_get_contents($urlGET);
 
-                        $response = file_get_contents($url);
-
-                        $salas = array();
-                        $i = 0;
+                        // $salas = array();
+                        // $i = 0;
     
-                        // adiciona as informações retornadas ao array
-                        while ($row = $result->fetch_assoc()) {
-                            $sala = array(
-                                'id' => $row['ID_SALA'],
-                                'nome' => $row['NOME_SALA'],
-                                'numero' => $row['NUMERO_SALA']
-                            );
+                        // // adiciona as informações retornadas ao array
+                        // while ($row = $result->fetch_assoc()) {
+                        //     $sala = array(
+                        //         'id' => $row['ID_SALA'],
+                        //         'nome' => $row['NOME_SALA'],
+                        //         'numero' => $row['NUMERO_SALA']
+                        //     );
     
-                            $salas[$i] = $sala;
-                            $i++;
-                        }
+                        //     $salas[$i] = $sala;
+                        //     $i++;
+                        // }
     
                         // resposta da api com status sucesso e informações
                         $response = array(
                             'status' => 'success',
-                            'sala' => $salas
+                            'sala' => $respostaAPI
                         );
 
                     } 
