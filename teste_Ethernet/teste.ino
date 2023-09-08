@@ -2,9 +2,9 @@
 #include <Ethernet.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress server(192,168,1,181);
+IPAddress server(192,168,1,181); // ip do servidor da API?  (testar para ver se é do DHCP)
 
-IPAddress ip(192,168,1,255);
+IPAddress ip(10,105,72,177); // ip fixo para  caso não conecte por DHCP
 
 EthernetClient client;
 
