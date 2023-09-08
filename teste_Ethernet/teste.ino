@@ -1,41 +1,31 @@
-// https://api.github.com/
 #include <SPI.h>
-#include <arduino-timer.h>
 #include <Ethernet.h>
-#include <ArduinoUniqueID.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "http://10.105.72.132/";    
-IPAddress ip(192, 168, 0, 177);
-IPAddress myDns(192, 168, 0, 1);
+IPAddress server(192,168,1,181);
+
+IPAddress ip(192,168,1,255);
+
 EthernetClient client;
 
-unsigned long beginMicros, endMicros;
-unsigned long byteCount = 0;
-bool printWebData = true; 
+void setup() {
+ Serial.begin(9600);
+  while (!Serial) {
+   ; // wait for serial port to connect. Needed for Leonardo only
+ }
 
-void setup(){
-  Serial.begin(9600);
-
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP");
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-      while (true) {
-        delay(1); // do nothing, no point running without Ethernet hardware
-      }
-    }
-    if (Ethernet.linkStatus() == LinkOFF) {
-      Serial.println("Ethernet cable is not connected.");
-    }
-    // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac, ip, myDns);
-  } else {
-    Serial.print("  DHCP assigned IP ");
-    Serial.println(Ethernet.localIP());
-  }
-
+ // start the Ethernet connection:
+ if (Ethernet.begin(mac) == 0) {
+   Serial.println("Failed to configure Ethernet using DHCP");
+   // no point in carrying on, so do nothing forevermore:
+   // try to congifure using IP address instead of DHCP:
+   Ethernet.begin(mac, ip);
+ }
+ // give the Ethernet shield a second to initialize:
+ delay(1000);
+ Serial.println("connecting...");
+ Serial.println("http://192.168.1.181/SystemLog.htm");
+ Serial.println("QWRtaW46MDEyMzQ1");
 
   // if you get a connection, report back via serial:
   if (client.connect(server, 80)) {
@@ -48,29 +38,24 @@ void setup(){
     // if you didn't get a connection to the server:
     Serial.println("connection failed");
   }
-  beginMicros = micros();
-
 }
 
-void loop(){
-  int len = client.available();
+void loop()
+{
+ // if there are incoming bytes available 
+ // from the server, read them and print them:
+ if (client.available()) {
+   char c = client.read();
+   Serial.print(c);
+ }
 
-    byte buffer[80];
-    if (len > 80) len = 80;
-    client.read(buffer, len);
-  
-      Serial.write(buffer, len); // show in the serial monitor (slows some boards)
-    
+ // if the server's disconnected, stop the client:
+ if (!client.connected()) {
+   Serial.println();
+   Serial.println("disconnecting.");
+   client.stop();
 
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    endMicros = micros();
-
-    client.stop();
-
-
-    while (true) {
-      delay(1);
-    }
-  }
+   // do nothing forevermore:
+   while(true);
+ }
 }
