@@ -24,7 +24,7 @@ void setup() {
  // give the Ethernet shield a second to initialize:
  delay(1000);
  Serial.println("connecting...");
- Serial.println("http://192.168.1.181/SystemLog.htm");
+ Serial.println("http://10.105.72.132/api-arduino/api.php?usuario=123&endpoint=salas");
  Serial.println("QWRtaW46MDEyMzQ1");
 
   // if you get a connection, report back via serial:
