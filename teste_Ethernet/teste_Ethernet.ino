@@ -32,7 +32,7 @@ void setup() {
   // if you get a connection, report back via serial:
   if (client.connect(server, 80)) { // 80=http 443=https
     // Make a HTTP request:
-    client.println("GET /apiArduino/api.php?usuario=123&endpoint=salas HTTP/1.0");
+    client.println("GET /api-arduino/api.php?usuario=123&endpoint=salas HTTP/1.0");
     client.println("Host: 10.105.75.2");
     client.println("Connection: close");
     client.println();
