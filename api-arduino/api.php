@@ -1,6 +1,7 @@
 <?php
     header("Access-Control-Allow-Origin: *");
     include_once("conexao.php");
+    
 
     // login do banco (talvez não precise)
     // $usuario = "arduinos";
@@ -85,16 +86,16 @@
                         $nomeSala = $resposta['NOME_SALA'] ." ". $resposta['NUMERO_SALA'];
 
                         // $urlGET = '{url}/v1/synthesize?accept=audio%2Fwav&text='. $nomeSala .'&voice=pt-BR_IsabelaV3Voice';
-                        $urlGET = 'https://dummyjson.com/products/1';
-                        $urlPOST = '{url}/v1/synthesize?voice=pt-BR_IsabelaV3Voice';
+                        // $urlGET = 'https://dummyjson.com/products/1';
+                        $urlPOST = 'https://eastus.tts.speech.microsoft.com/cognitiveservices/v1';
 
                         // POST
-                        // // use key 'http' even if you send the request to https://...
+                        // use key 'http' even if you send the request to https://...
                         // $options = [
                         //     'http' => [
-                        //         'header' => "Authorization: Bearer {token}\r\nContent-type: application/x-www-form-urlencoded\r\nAccept: audio/wav",
+                        //         'header' => "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEiLCJ0eXAiOiJKV1QifQ.eyJyZWdpb24iOiJlYXN0dXMiLCJzdWJzY3JpcHRpb24taWQiOiI5MTFkOTMyOWY3Mjg0NjVmYjEzMzQwYjU1ZGJlZTZkYSIsInByb2R1Y3QtaWQiOiJTcGVlY2hTZXJ2aWNlcy5GMCIsImNvZ25pdGl2ZS1zZXJ2aWNlcy1lbmRwb2ludCI6Imh0dHBzOi8vYXBpLmNvZ25pdGl2ZS5taWNyb3NvZnQuY29tL2ludGVybmFsL3YxLjAvIiwiYXp1cmUtcmVzb3VyY2UtaWQiOiIvc3Vic2NyaXB0aW9ucy8wNDU0MGNlYy0zMzRhLTQzMjctYWQyOC0zYzNhM2ExOWZlNTcvcmVzb3VyY2VHcm91cHMvZmFsYW50ZXMvcHJvdmlkZXJzL01pY3Jvc29mdC5Db2duaXRpdmVTZXJ2aWNlcy9hY2NvdW50cy9mYWxhbXVpdG9ldWVzcGVybyIsInNjb3BlIjoic3BlZWNoc2VydmljZXMiLCJhdWQiOiJ1cm46bXMuc3BlZWNoc2VydmljZXMuZWFzdHVzIiwiZXhwIjoxNjk1MDYyMjY1LCJpc3MiOiJ1cm46bXMuY29nbml0aXZlc2VydmljZXMifQ.og2QncNjHoDTVJwOcujM_-VVCKSehzTEKU-4QqN51kyeoXTogr_dQhIqtSNcDUqsctjHPWMYPvB53lI_mL941g\r\nContent-type: application/ssml+xml\r\nX-Microsoft-OutputFormat: riff-24khz-16bit-mono-pcm\r\nUser-Agent: falamuitoeuespero",
                         //         'method' => 'POST',
-                        //         'data' => "{\"text\":\"". $nomeSala ."\"}",
+                        //         'data' => "{\"text\":\"<speak version='1.0' xml:lang='pt-BR'><voice xml:lang='pt-BR' xml:gender='Female'name='pt-BR-FranciscaNeural'>Olá.</voice></speak>\"}",
                         //     ],
                         // ];
 
@@ -102,12 +103,48 @@
                         // $result = file_get_contents($urlPOST, false, $context);
                         // if ($result === false) {
                         //     /* Handle error */
+                        //     $result = "Deu ruim.";
+                        // }
+
+
+                                                // curl
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, [
+                        CURLOPT_URL => "https://eastus.tts.speech.microsoft.com/cognitiveservices/v1",
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_ENCODING => "",
+                        CURLOPT_MAXREDIRS => 10,
+                        CURLOPT_TIMEOUT => 30,
+                        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                        CURLOPT_CUSTOMREQUEST => "POST",
+                        CURLOPT_POSTFIELDS => "<speak version='1.0' xml:lang='pt-BR'><voice xml:lang='pt-BR' xml:gender='Female' name='pt-BR-FranciscaNeural'>\n        Olá.\n</voice></speak>",
+                        CURLOPT_HTTPHEADER => [
+                            "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEiLCJ0eXAiOiJKV1QifQ.eyJyZWdpb24iOiJlYXN0dXMiLCJzdWJzY3JpcHRpb24taWQiOiI5MTFkOTMyOWY3Mjg0NjVmYjEzMzQwYjU1ZGJlZTZkYSIsInByb2R1Y3QtaWQiOiJTcGVlY2hTZXJ2aWNlcy5GMCIsImNvZ25pdGl2ZS1zZXJ2aWNlcy1lbmRwb2ludCI6Imh0dHBzOi8vYXBpLmNvZ25pdGl2ZS5taWNyb3NvZnQuY29tL2ludGVybmFsL3YxLjAvIiwiYXp1cmUtcmVzb3VyY2UtaWQiOiIvc3Vic2NyaXB0aW9ucy8wNDU0MGNlYy0zMzRhLTQzMjctYWQyOC0zYzNhM2ExOWZlNTcvcmVzb3VyY2VHcm91cHMvZmFsYW50ZXMvcHJvdmlkZXJzL01pY3Jvc29mdC5Db2duaXRpdmVTZXJ2aWNlcy9hY2NvdW50cy9mYWxhbXVpdG9ldWVzcGVybyIsInNjb3BlIjoic3BlZWNoc2VydmljZXMiLCJhdWQiOiJ1cm46bXMuc3BlZWNoc2VydmljZXMuZWFzdHVzIiwiZXhwIjoxNjk1MDY4NTEyLCJpc3MiOiJ1cm46bXMuY29nbml0aXZlc2VydmljZXMifQ.g6jlxubi_p2dsr8yu5aVkO3ZLnqdGwNU2IHDFglLuWUJD1qOlugI-YGjCmoOLNtvpJnJaDgnRtvEZOjqhLXR0A",
+                            "Content-Type: application/ssml+xml",
+                            "User-Agent: falamuitoeuespero",
+                            "X-Microsoft-OutputFormat: riff-24khz-16bit-mono-pcm"
+                        ],
+                        ]);
+
+                        // echo curl_exec($curl);
+                        // echo curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+                        $responseTTS = curl_exec($curl);
+                        $err = curl_error($curl);
+
+                        // curl_close($curl);
+
+                        // if ($err) {
+                        // echo "cURL Error #:" . $err;
+                        // } else {
+                        // echo $responseTTS;
                         // }
 
                         // $respostaAPI = var_dump($result);
                         
                         // GET
-                        $respostaAPI = file_get_contents($urlGET);
+                        // $respostaAPI = file_get_contents($urlGET);
 
                         // $salas = array();
                         // $i = 0;
@@ -126,8 +163,8 @@
     
                         // resposta da api com status sucesso e informações
                         $response = array(
-                            'status' => 'success',
-                            'sala' => $respostaAPI
+                            'status' => 'Código: '. curl_getinfo($curl, CURLINFO_HTTP_CODE),
+                            'sala' => $responseTTS
                         );
 
                     } 
@@ -179,6 +216,7 @@
         }
 
     // enviar respostas como json
-    echo(json_encode($response));
+    // echo(json_encode($resposta));
+    echo var_dump($response);
 
 ?>
