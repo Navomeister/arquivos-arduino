@@ -1,10 +1,6 @@
 <?php
     header("Access-Control-Allow-Origin: *");
     include_once("conexao.php");
-    
-
-    // login do banco (talvez não precise)
-    // $usuario = "arduinos";
 
     // nomes de usuário permitidos
     $usuarios = 'SELECT UNIQUE_ID FROM arduino WHERE STATUS_ARDUINO = "Ativo";';
@@ -65,47 +61,24 @@
                         'message' => 'Erro:' . $conn->connect_error
                     );
                 } else {
-                    // consulta o banco
+                    // consulta o banco para pegar o ID do arduino
                     $query = 'SELECT * FROM arduino WHERE UNIQUE_ID = "'. $_GET["usuario"] .'";';
                     $idArduino = $conn->query($query);
                     $pegaId = $idArduino->fetch_assoc();
 
+                    // pega as informações da sala em que o arduino está atribuído
                     $sql = 'SELECT * FROM sala WHERE FK_ARDUINO = '. $pegaId['ID_ARDUINO'];
                     $result = $conn->query($sql);
     
                     // verifica se o query retornou algo
                     if ($result) {
-                        // muda o status para ativo já que houve retorno da api
-                        $statusChg = 'UPDATE arduino SET STATUS_ARDUINO = "Ativo" WHERE UNIQUE_ID = ' . $_GET["usuario"];
-                        $statusChgd = $conn->query($statusChg);
-
-                        // consulta novamente para pegar com status ativo
+                        // consulta ambas as tabelas juntas
                         $sql = 'SELECT * FROM sala INNER JOIN arduino ON FK_ARDUINO = ID_ARDUINO WHERE arduino.UNIQUE_ID = "'. $_GET['usuario'] .'";';
                         $result = $conn->query($sql);
                         $resposta = $result->fetch_assoc();
                         $nomeSala = $resposta['NOME_SALA'] ." ". $resposta['NUMERO_SALA'];
 
-                        // $urlGET = '{url}/v1/synthesize?accept=audio%2Fwav&text='. $nomeSala .'&voice=pt-BR_IsabelaV3Voice';
-                        // $urlGET = 'https://dummyjson.com/products/1';
-                        $urlPOST = 'https://eastus.tts.speech.microsoft.com/cognitiveservices/v1';
-
-                        // POST
-                        // use key 'http' even if you send the request to https://...
-                        // $options = [
-                        //     'http' => [
-                        //         'header' => "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEiLCJ0eXAiOiJKV1QifQ.eyJyZWdpb24iOiJlYXN0dXMiLCJzdWJzY3JpcHRpb24taWQiOiI5MTFkOTMyOWY3Mjg0NjVmYjEzMzQwYjU1ZGJlZTZkYSIsInByb2R1Y3QtaWQiOiJTcGVlY2hTZXJ2aWNlcy5GMCIsImNvZ25pdGl2ZS1zZXJ2aWNlcy1lbmRwb2ludCI6Imh0dHBzOi8vYXBpLmNvZ25pdGl2ZS5taWNyb3NvZnQuY29tL2ludGVybmFsL3YxLjAvIiwiYXp1cmUtcmVzb3VyY2UtaWQiOiIvc3Vic2NyaXB0aW9ucy8wNDU0MGNlYy0zMzRhLTQzMjctYWQyOC0zYzNhM2ExOWZlNTcvcmVzb3VyY2VHcm91cHMvZmFsYW50ZXMvcHJvdmlkZXJzL01pY3Jvc29mdC5Db2duaXRpdmVTZXJ2aWNlcy9hY2NvdW50cy9mYWxhbXVpdG9ldWVzcGVybyIsInNjb3BlIjoic3BlZWNoc2VydmljZXMiLCJhdWQiOiJ1cm46bXMuc3BlZWNoc2VydmljZXMuZWFzdHVzIiwiZXhwIjoxNjk1MDYyMjY1LCJpc3MiOiJ1cm46bXMuY29nbml0aXZlc2VydmljZXMifQ.og2QncNjHoDTVJwOcujM_-VVCKSehzTEKU-4QqN51kyeoXTogr_dQhIqtSNcDUqsctjHPWMYPvB53lI_mL941g\r\nContent-type: application/ssml+xml\r\nX-Microsoft-OutputFormat: riff-24khz-16bit-mono-pcm\r\nUser-Agent: falamuitoeuespero",
-                        //         'method' => 'POST',
-                        //         'data' => "{\"text\":\"<speak version='1.0' xml:lang='pt-BR'><voice xml:lang='pt-BR' xml:gender='Female'name='pt-BR-FranciscaNeural'>Olá.</voice></speak>\"}",
-                        //     ],
-                        // ];
-
-                        // $context = stream_context_create($options);
-                        // $result = file_get_contents($urlPOST, false, $context);
-                        // if ($result === false) {
-                        //     /* Handle error */
-                        //     $result = "Deu ruim.";
-                        // }
-
+                        $urlPOST = 'https://eastus.tts.speech.microsoft.com/cognitiveservices/v1'; // link da api de TTS
 
                         // curl
                         $curl = curl_init();
@@ -119,54 +92,38 @@
                         CURLOPT_TIMEOUT => 30,
                         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                         CURLOPT_CUSTOMREQUEST => "POST", // método de request
-                        CURLOPT_POSTFIELDS => "<speak version='1.0' xml:lang='pt-BR'><voice xml:lang='pt-BR' xml:gender='Female' name='pt-BR-FranciscaNeural'>\n        Olá.\n</voice></speak>", // corpo do request
-                        CURLOPT_HTTPHEADER => [
-                            "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEiLCJ0eXAiOiJKV1QifQ.eyJyZWdpb24iOiJlYXN0dXMiLCJzdWJzY3JpcHRpb24taWQiOiI5MTFkOTMyOWY3Mjg0NjVmYjEzMzQwYjU1ZGJlZTZkYSIsInByb2R1Y3QtaWQiOiJTcGVlY2hTZXJ2aWNlcy5GMCIsImNvZ25pdGl2ZS1zZXJ2aWNlcy1lbmRwb2ludCI6Imh0dHBzOi8vYXBpLmNvZ25pdGl2ZS5taWNyb3NvZnQuY29tL2ludGVybmFsL3YxLjAvIiwiYXp1cmUtcmVzb3VyY2UtaWQiOiIvc3Vic2NyaXB0aW9ucy8wNDU0MGNlYy0zMzRhLTQzMjctYWQyOC0zYzNhM2ExOWZlNTcvcmVzb3VyY2VHcm91cHMvZmFsYW50ZXMvcHJvdmlkZXJzL01pY3Jvc29mdC5Db2duaXRpdmVTZXJ2aWNlcy9hY2NvdW50cy9mYWxhbXVpdG9ldWVzcGVybyIsInNjb3BlIjoic3BlZWNoc2VydmljZXMiLCJhdWQiOiJ1cm46bXMuc3BlZWNoc2VydmljZXMuZWFzdHVzIiwiZXhwIjoxNjk1MDY4NTEyLCJpc3MiOiJ1cm46bXMuY29nbml0aXZlc2VydmljZXMifQ.g6jlxubi_p2dsr8yu5aVkO3ZLnqdGwNU2IHDFglLuWUJD1qOlugI-YGjCmoOLNtvpJnJaDgnRtvEZOjqhLXR0A",
-                            "Content-Type: application/ssml+xml",
-                            "User-Agent: falamuitoeuespero",
-                            "X-Microsoft-OutputFormat: riff-24khz-16bit-mono-pcm"
+                        CURLOPT_POSTFIELDS => "<speak version='1.0' xml:lang='pt-BR'><voice xml:lang='pt-BR' xml:gender='Female' name='pt-BR-FranciscaNeural'>\n ". $nomeSala ." \n</voice></speak>", // corpo do request
+                        CURLOPT_HTTPHEADER => [ // headers da chamada 
+                            // Muda depois de um tempo (precisaria de outra chamada de api) // "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleTEiLCJ0eXAiOiJKV1QifQ.eyJyZWdpb24iOiJlYXN0dXMiLCJzdWJzY3JpcHRpb24taWQiOiI5MTFkOTMyOWY3Mjg0NjVmYjEzMzQwYjU1ZGJlZTZkYSIsInByb2R1Y3QtaWQiOiJTcGVlY2hTZXJ2aWNlcy5GMCIsImNvZ25pdGl2ZS1zZXJ2aWNlcy1lbmRwb2ludCI6Imh0dHBzOi8vYXBpLmNvZ25pdGl2ZS5taWNyb3NvZnQuY29tL2ludGVybmFsL3YxLjAvIiwiYXp1cmUtcmVzb3VyY2UtaWQiOiIvc3Vic2NyaXB0aW9ucy8wNDU0MGNlYy0zMzRhLTQzMjctYWQyOC0zYzNhM2ExOWZlNTcvcmVzb3VyY2VHcm91cHMvZmFsYW50ZXMvcHJvdmlkZXJzL01pY3Jvc29mdC5Db2duaXRpdmVTZXJ2aWNlcy9hY2NvdW50cy9mYWxhbXVpdG9ldWVzcGVybyIsInNjb3BlIjoic3BlZWNoc2VydmljZXMiLCJhdWQiOiJ1cm46bXMuc3BlZWNoc2VydmljZXMuZWFzdHVzIiwiZXhwIjoxNjk1MzE1MjExLCJpc3MiOiJ1cm46bXMuY29nbml0aXZlc2VydmljZXMifQ.3VBKmXGcPrlyjBpk_kYwy5zPSL_vbmPPUuZ1Y9XEhTNTUBLS0olOmvyxPQ49o-T9wzobEcBULxdKe7ae3H_ZnA",
+                            "Ocp-Apim-Subscription-Key: d93c29515f6b4fb2a917afa4390d7454", // chave do serviço (menos seguro mas usaria de qualquer jeito pra pegar o token)
+                            "Content-Type: application/ssml+xml", // tipo do body
+                            "User-Agent: falamuitoeuespero", // nome do serviço
+                            "X-Microsoft-OutputFormat: riff-24khz-16bit-mono-pcm" // extensão da resposta (wav)
                         ],
                         ]);
 
-                        // echo curl_exec($curl);
-                        // echo curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
+                        // pega a resposta ou erro da chamada
                         $responseTTS = curl_exec($curl);
                         $err = curl_error($curl);
+                        curl_close($curl);
 
-                        // curl_close($curl);
-
-                        // if ($err) {
-                        // echo "cURL Error #:" . $err;
-                        // } else {
-                        // echo $responseTTS;
-                        // }
-
-                        // $respostaAPI = var_dump($result);
                         
-                        // GET
-                        // $respostaAPI = file_get_contents($urlGET);
+                        if ($responseTTS === "" || !$responseTTS) {
+                            // resposta da api com erro e informações, caso ocorra
+                            $response = array(
+                                'status' => 'Erro Código: '. curl_getinfo($curl, CURLINFO_HTTP_CODE),
+                                'sala' => $err
+                            );
+                        }
+                        else{
+                            // muda o status para ativo já que houve retorno da API
+                            $statusChg = 'UPDATE arduino SET STATUS_ARDUINO = "Ativo" WHERE UNIQUE_ID = ' . $_GET["usuario"];
+                            $statusChgd = $conn->query($statusChg);
 
-                        // $salas = array();
-                        // $i = 0;
-    
-                        // // adiciona as informações retornadas ao array
-                        // while ($row = $result->fetch_assoc()) {
-                        //     $sala = array(
-                        //         'id' => $row['ID_SALA'],
-                        //         'nome' => $row['NOME_SALA'],
-                        //         'numero' => $row['NUMERO_SALA']
-                        //     );
-    
-                        //     $salas[$i] = $sala;
-                        //     $i++;
-                        // }
-    
-                        // resposta da api com status sucesso e informações
-                        $response = array(
-                            'status' => 'Código: '. curl_getinfo($curl, CURLINFO_HTTP_CODE),
-                            'sala' => $responseTTS
-                        );
+                            // devolve a resposta do TTS em String (converter no arduino)
+                            $response = $responseTTS;
+                            // $teste = file_put_contents("audio/".uniqid().".wav", $responseTTS); // salva o arquivo na pasta audio (apenas para teste)
+                        }
 
                     } 
                     
@@ -184,15 +141,19 @@
             }
             // endpoint cadastro
             elseif ($endpoint == 'cadastro') {
+                // checa se já cadastro com aquele unique id
                 $sql = 'SELECT * FROM arduino WHERE UNIQUE_ID =' . $_GET['usuario'];
                 $query = $conn->query($sql);
                 $result = $query->fetch_assoc();
+
+                // se houver, retorna erro
                 if ($result) {
                     $response = array(
                         'status' => 'error',
                         'message' => 'Erro: Arduino já cadastrado'
                     );
                 }
+                // caso contrário, cadastra o arduino como inativo, aguardando atribuição de sala
                 else {
                     $cad = 'INSERT INTO arduino(UNIQUE_ID, STATUS_ARDUINO, LAST_UPDATE) VALUES("'. $_GET['usuario'] .'", "Inativo", NOW());';
                     $result = $conn->query($cad);
@@ -206,7 +167,9 @@
                     );
                 }
             }
+            // endpoint de atividade
             elseif ($endpoint == 'ativo') {
+                // atualiza o estado do arduino para ativo, confirmando sua atividade
                 $sql = "UPDATE arduino SET STATUS_ARDUINO = 'Ativo', LAST_UPDATE = NOW() WHERE UNIQUE_ID = '". $_GET['usuario'] ."';";
                 $result = $conn->query($sql);
                 $response = array(
