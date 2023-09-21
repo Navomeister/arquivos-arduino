@@ -14,8 +14,8 @@
   - Caso o arduino já esteja cadastrado, retorna erro informando que o mesmo já está cadastrado
 
 ### 2. salas
-  - Faz uma chamada para a API de TTS (a fazer)
-  - Retorna a resposta para o requerente
+  - Faz uma chamada para a API de TTS
+  - Retorna a resposta (áudio em  String) para o requerente
 
 ### 3. ativo
   - Atualiza o status do arduino no banco, confirmando sua atividade
