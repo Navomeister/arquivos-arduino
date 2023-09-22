@@ -23,4 +23,4 @@
 
 
 # Site da API para teste
-https://apenasumtestezinho.000webhostapp.com/api/api.php
+https://apenasumtestezinho.000webhostapp.com/api/api.php?endpoint=ativo&usuario=1234
