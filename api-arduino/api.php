@@ -122,6 +122,11 @@
 
                             // devolve a resposta do TTS em String (converter no arduino)
                             $response = $responseTTS;
+                            header('Content-Description: File Transfer');
+                            header('Content-Type: audio/x-wav');
+                            // header('Content-Disposition: attachment; filename=testfile.wav');
+                            header('Content-Transfer-Encoding: binary');
+                            // header('transfer-encoding: chunked');
                             // $teste = file_put_contents("audio/".uniqid().".wav", $responseTTS); // salva o arquivo na pasta audio (apenas para teste)
                         }
 
@@ -179,8 +184,12 @@
             }
         }
 
-    // enviar respostas como json
-    // echo(json_encode($resposta));
-    echo var_dump($response);
+        if ($endpoint != 'salas') {
+            // enviar respostas como json
+            echo(json_encode($response));
+        }
+        else {
+            echo $response;
+        }
 
 ?>
