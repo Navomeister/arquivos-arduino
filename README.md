@@ -20,8 +20,3 @@
 ### 3. ativo
   - Atualiza o status do arduino no banco, confirmando sua atividade
   - Retorna sucesso e reseta o timer para desativá-lo (a fazer)
-
-
-# Site da API para teste
-https://apenasumtestezinho.000webhostapp.com/api/api.php?endpoint=ativo&usuario=1234
-https://apenasumtestezinho.000webhostapp.com/api/api.php?endpoint=salas&usuario=1234
