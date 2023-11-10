@@ -15,7 +15,7 @@ const char* password = STAPSK;
 const uint32_t id = ESP.getChipId();
 
 // host da API
-String host = "apenasumtestezinho.000webhostapp.com";
+String host = "api-arduino.azurewebsites.net";
 
 // Pinos que está conectado o sensor
 #define echoPin 5
