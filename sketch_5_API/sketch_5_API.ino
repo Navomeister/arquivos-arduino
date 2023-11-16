@@ -44,7 +44,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // String url = "/api/api.php?endpoint=salas&usuario=1234";
-  request("/api/api.php?endpoint=cadastro&usuario=" + id);
+  request("?endpoint=cadastro&usuario=" + id);
 
   // seta input e output do sensor
   pinMode(trigPin, OUTPUT);
@@ -71,14 +71,14 @@ void loop() {
 
   // caso detecte menos de 10 cm de distancia, roda o request de sala
   if (distancia < 10){
-    request("/api/api.php?endpoint=salas&usuario=" + id);
+    request("?endpoint=salas&usuario=" + id);
     delay(60000);
   }
 
 }
 
 bool triggSala(void *){
-  request("/api/api.php?endpoint=ativo&usuario=" + id);
+  request("?endpoint=ativo&usuario=" + id);
   return true;
 }
 
